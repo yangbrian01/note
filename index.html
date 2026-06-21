@@ -3,118 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yang Tech Studio V7.0 - 總譜指揮版</title>
+    <title>Yang Tech Studio V8.0 - Symphonic Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background-color: #e2e8f0; user-select: none; }
-        #top-bar { background-color: #2d3748; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; }
-        .brand { font-weight: bold; color: #63b3ed; font-size: 18px; margin-right: 20px; }
-        .tool-btn { background: #4a5568; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; transition: 0.1s; }
-        .tool-btn:hover { background-color: #718096; }
-        .tool-btn.active { background-color: #3182ce; font-weight: bold; box-shadow: 0 0 5px #63b3ed; }
-        .track-btn { background: #2f855a; color: white; border: 2px solid transparent; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: bold; }
-        .track-btn.active { border-color: #9ae6b4; background: #38a169; }
-        .divider { width: 1px; height: 24px; background-color: #4a5568; margin: 0 5px; }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: -apple-system, sans-serif; background-color: #2c3e50; user-select: none; }
+        #top-bar { background-color: #1a252f; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 10; }
+        .brand { font-weight: bold; color: #3498db; font-size: 18px; margin-right: 10px; }
+        .tool-btn { background: #34495e; color: white; border: 1px solid #2c3e50; border-radius: 4px; padding: 8px 12px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .tool-btn:hover { background-color: #465c71; }
+        .tool-btn.active { background-color: #3498db; font-weight: bold; box-shadow: 0 0 8px rgba(52,152,219,0.5); }
+        .track-btn { background: #27ae60; color: white; border: 2px solid transparent; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .track-btn:hover { background: #2ecc71; }
+        .track-btn.active { border-color: #f1c40f; background: #2ecc71; color: #fff; }
+        .divider { width: 1px; height: 24px; background-color: #7f8c8d; margin: 0 5px; }
+        
+        .action-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .action-btn.play { background-color: #f1c40f; color: #2c3e50; }
+        .bpm-control { display: flex; align-items: center; background: #34495e; padding: 4px 10px; border-radius: 4px; font-size: 14px; }
+        .bpm-control input { width: 50px; background: transparent; border: none; color: white; font-weight: bold; font-size: 16px; outline: none; text-align: center; margin-right: 5px; }
+
         #workspace { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 40px; }
-        #paper { background-color: white; width: 900px; min-height: 1100px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 50px; cursor: crosshair; }
-        .score-title { text-align: center; font-size: 32px; font-family: serif; margin-bottom: 5px; }
-        .score-composer { text-align: right; font-size: 16px; font-family: serif; margin-bottom: 30px; }
+        #paper { background-color: #ecf0f1; width: 900px; min-height: 1100px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 50px; cursor: crosshair; position: relative; }
+        .score-title { text-align: center; font-size: 36px; font-family: "Times New Roman", serif; margin-bottom: 5px; color: #2c3e50; }
+        .score-composer { text-align: right; font-size: 16px; font-family: "Times New Roman", serif; margin-bottom: 40px; color: #34495e; font-style: italic; }
+        
+        /* 播放時的覆蓋層提示 */
+        #playback-overlay { position: absolute; top: 10px; left: 10px; background: rgba(46, 204, 113, 0.9); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <div class="brand">Yang Tech V7</div>
+        <div class="brand">Yang Tech V8</div>
         
-        <button class="track-btn active" data-track="0">編輯: 小號 (高音)</button>
-        <button class="track-btn" data-track="1">編輯: 上低音號 (低音)</button>
+        <button class="track-btn active" data-track="0">Trumpet (Treble)</button>
+        <button class="track-btn" data-track="1">Euphonium (Bass)</button>
         
         <div class="divider"></div>
 
-        <button class="tool-btn" data-type="duration" data-val="8">♪ 8分</button>
-        <button class="tool-btn active" data-type="duration" data-val="q">♩ 4分</button>
-        <button class="tool-btn" data-type="duration" data-val="h">𝅗𝅥 2分</button>
-        <button class="tool-btn" id="btn-rest">𝄽 休止</button>
+        <button class="tool-btn" data-type="duration" data-val="16">16分</button>
+        <button class="tool-btn" data-type="duration" data-val="8">8分</button>
+        <button class="tool-btn active" data-type="duration" data-val="q">4分</button>
+        <button class="tool-btn" data-type="duration" data-val="h">2分</button>
+        <button class="tool-btn" id="btn-rest">休止</button>
 
         <div class="divider"></div>
-
         <button class="tool-btn active" data-type="accidental" data-val="">無</button>
         <button class="tool-btn" data-type="accidental" data-val="b">♭</button>
         <button class="tool-btn" data-type="accidental" data-val="#">♯</button>
 
         <div style="flex:1;"></div>
-        <button class="tool-btn" style="background:#e53e3e;" onclick="undoNote()">↶ 復原</button>
+        
+        <div class="bpm-control">
+            <input type="number" id="bpm-input" value="100" min="40" max="240"> BPM
+        </div>
+        
+        <button class="action-btn" onclick="undoNote()">↶ Undo</button>
+        <button class="action-btn play" onclick="playScore()">▶ Play Audio</button>
     </div>
 
     <div id="workspace">
         <div id="paper">
-            <div class="score-title">Chorale for Brass</div>
-            <div class="score-composer">Conductor's Score</div>
+            <div id="playback-overlay">🎵 Playing...</div>
+            <div class="score-title">Symphonic Dimensions</div>
+            <div class="score-composer">Conductor's Score / Arr. Yang Tech</div>
             <div id="score-canvas"></div>
         </div>
     </div>
 
     <script>
-        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, StaveConnector, Beam } = Vex.Flow;
+        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, StaveConnector, Beam, TextNote, Modifier } = Vex.Flow;
 
-        // 系統狀態
         let currentDuration = "q";
         let currentAccidental = "";
         let isRest = false;
-        let activeTrack = 0; // 0: Trumpet, 1: Euphonium
+        let activeTrack = 0; 
         
         const beatValues = { "w": 4, "h": 2, "q": 1, "8": 0.5, "16": 0.25 };
-        
-        // 雙軌資料庫
-        let scoreData = [
-            [], // Track 0
-            []  // Track 1
-        ];
+        let scoreData = [ [], [] ];
 
         // UI 綁定
-        document.querySelectorAll('.track-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                activeTrack = parseInt(e.target.dataset.track);
-            };
-        });
-
-        document.querySelectorAll('[data-type="duration"]').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('[data-type="duration"]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentDuration = e.target.dataset.val;
-            };
-        });
-
-        document.querySelectorAll('[data-type="accidental"]').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('[data-type="accidental"]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentAccidental = e.target.dataset.val;
-            };
-        });
-
+        const setupBtns = (selector, type) => {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.onclick = (e) => {
+                    document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    if(type === 'track') activeTrack = parseInt(e.target.dataset.track);
+                    if(type === 'dur') currentDuration = e.target.dataset.val;
+                    if(type === 'acc') currentAccidental = e.target.dataset.val;
+                };
+            });
+        };
+        setupBtns('.track-btn', 'track');
+        setupBtns('[data-type="duration"]', 'dur');
+        setupBtns('[data-type="accidental"]', 'acc');
         document.getElementById('btn-rest').onclick = (e) => { isRest = !isRest; e.target.classList.toggle('active'); };
 
-        // 兩個聲部的音高對應表
-        const pitchMapTreble = [
-            { y: 0, pitch: "g/5" }, { y: 10, pitch: "e/5" }, { y: 20, pitch: "c/5" }, { y: 30, pitch: "a/4" }, { y: 40, pitch: "f/4" }, { y: 50, pitch: "d/4" }
-        ];
-        const pitchMapBass = [
-            { y: 0, pitch: "b/3" }, { y: 10, pitch: "g/3" }, { y: 20, pitch: "e/3" }, { y: 30, pitch: "c/3" }, { y: 40, pitch: "a/2" }, { y: 50, pitch: "f/2" }
-        ];
+        const pitchMapTreble = [ { y: 0, pitch: "g/5" }, { y: 10, pitch: "e/5" }, { y: 20, pitch: "c/5" }, { y: 30, pitch: "a/4" }, { y: 40, pitch: "f/4" }, { y: 50, pitch: "d/4" } ];
+        const pitchMapBass = [ { y: 0, pitch: "b/3" }, { y: 10, pitch: "g/3" }, { y: 20, pitch: "e/3" }, { y: 30, pitch: "c/3" }, { y: 40, pitch: "a/2" }, { y: 50, pitch: "f/2" } ];
 
-        // 點擊輸入
         document.getElementById('paper').addEventListener('mousedown', function(e) {
+            if(e.target.closest('#top-bar')) return;
             const rect = document.getElementById('score-canvas').getBoundingClientRect();
-            
-            // 每個系統的高度大約是 250px (包含兩個五線譜)
             let systemOffset = (Math.floor((e.clientY - rect.top) / 250)) * 250;
-            
-            // 根據選定音軌給予不同的 Y 軸基準點
             let trackOffsetY = activeTrack === 0 ? 40 : 160;
             const clickY = e.clientY - rect.top - systemOffset - trackOffsetY; 
 
@@ -126,16 +118,13 @@
                 if (diff < minDiff) { minDiff = diff; closestPitch = p.pitch; }
             }
 
-            scoreData[activeTrack].push({
-                pitch: closestPitch, duration: currentDuration, accidental: currentAccidental,
-                isRest: isRest, beats: beatValues[currentDuration]
-            });
+            scoreData[activeTrack].push({ pitch: closestPitch, duration: currentDuration, accidental: currentAccidental, isRest: isRest, beats: beatValues[currentDuration] });
             renderScore();
         });
 
         function undoNote() { scoreData[activeTrack].pop(); renderScore(); }
 
-        // --- 核心：總譜渲染引擎 ---
+        // 總譜渲染引擎 (加入小節號)
         function renderScore() {
             const container = document.getElementById("score-canvas");
             container.innerHTML = ""; 
@@ -144,17 +133,6 @@
             const renderer = new Renderer(container, Renderer.Backends.SVG);
             const context = renderer.getContext();
 
-            // 如果兩軌都沒資料，畫空總譜
-            if (scoreData[0].length === 0 && scoreData[1].length === 0) {
-                renderer.resize(MAX_WIDTH, 250);
-                const st1 = new Stave(0, 0, 300).addClef("treble").addTimeSignature("4/4").setContext(context).draw();
-                const st2 = new Stave(0, 120, 300).addClef("bass").addTimeSignature("4/4").setContext(context).draw();
-                new StaveConnector(st1, st2).setType(StaveConnector.type.BRACKET).setContext(context).draw();
-                new StaveConnector(st1, st2).setType(StaveConnector.type.SINGLE_LEFT).setContext(context).draw();
-                return;
-            }
-
-            // 計算兩軌中最長的小節數
             let processTrack = (trackData) => {
                 let measures = [], current = [], beats = 0;
                 trackData.forEach(d => {
@@ -169,15 +147,15 @@
             let m1 = processTrack(scoreData[1]);
             let totalMeasures = Math.max(m0.length, m1.length);
 
-            renderer.resize(MAX_WIDTH, Math.ceil(totalMeasures / 2) * 250 + 50);
+            if (scoreData[0].length === 0 && scoreData[1].length === 0) totalMeasures = 1;
 
+            renderer.resize(MAX_WIDTH, Math.ceil(totalMeasures / 2) * 250 + 50);
             let startX = 0, startY = 0;
 
             for (let i = 0; i < totalMeasures; i++) {
                 let staveWidth = (startX === 0) ? 350 : 300; 
                 if (startX + staveWidth > MAX_WIDTH) { startX = 0; startY += 250; staveWidth = 350; }
 
-                // 建立上下兩行五線譜
                 const staveTreble = new Stave(startX, startY, staveWidth);
                 const staveBass = new Stave(startX, startY + 120, staveWidth);
                 
@@ -185,21 +163,19 @@
                     staveTreble.addClef("treble").addTimeSignature("4/4");
                     staveBass.addClef("bass").addTimeSignature("4/4");
                 }
+                
+                // 加入小節號 (Measure Numbers)
+                staveTreble.setMeasure(i + 1);
+
                 staveTreble.setContext(context).draw();
                 staveBass.setContext(context).draw();
 
-                // 畫大括號
-                if (startX === 0) {
-                    new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.BRACKET).setContext(context).draw();
-                }
+                if (startX === 0) new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.BRACKET).setContext(context).draw();
                 new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.SINGLE_LEFT).setContext(context).draw();
                 new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.SINGLE_RIGHT).setContext(context).draw();
 
-                // 轉換音符
                 let createVexNotes = (measureData, clef) => {
-                    if(!measureData || measureData.length === 0) {
-                        return [new StaveNote({ keys: [clef === "treble" ? "b/4" : "d/3"], duration: "wr", clef: clef })];
-                    }
+                    if(!measureData || measureData.length === 0) return [new StaveNote({ keys: [clef === "treble" ? "b/4" : "d/3"], duration: "wr", clef: clef })];
                     return measureData.map(d => {
                         let keys = d.isRest ? [clef === "treble" ? "b/4" : "d/3"] : [d.pitch];
                         let note = new StaveNote({ keys: keys, duration: d.duration + (d.isRest ? "r" : ""), clef: clef });
@@ -214,7 +190,6 @@
                 let voiceT = new Voice({ num_beats: 4, beat_value: 4 }).setStrict(false).addTickables(notesT);
                 let voiceB = new Voice({ num_beats: 4, beat_value: 4 }).setStrict(false).addTickables(notesB);
 
-                // 垂直對齊兩軌節拍
                 new Formatter().joinVoices([voiceT, voiceB]).format([voiceT, voiceB], staveWidth - 60);
                 
                 voiceT.draw(context, staveTreble);
@@ -224,6 +199,53 @@
                 
                 startX += staveWidth;
             }
+        }
+
+        // --- 核心：多聲部同步音訊引擎 (Polyphonic Audio Engine) ---
+        async function playScore() {
+            if (scoreData[0].length === 0 && scoreData[1].length === 0) return;
+            
+            const bpm = parseInt(document.getElementById('bpm-input').value) || 100;
+            // 計算一拍(四分音符)的秒數
+            const beatDuration = 60 / bpm; 
+            
+            await Tone.start();
+            // 使用兩個獨立的合成器來模擬兩種樂器的音色差異
+            const synthTreble = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } }).toDestination(); // 小號(偏亮)
+            const synthBass = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" } }).toDestination(); // 上低音號(偏暖)
+            
+            let now = Tone.now() + 0.1; // 預留一點緩衝時間
+            const overlay = document.getElementById('playback-overlay');
+            overlay.style.display = 'block';
+
+            // 處理軌道排程函數
+            const scheduleTrack = (trackData, synth) => {
+                let trackTime = now;
+                trackData.forEach(data => {
+                    // 將拍數(beats)轉換為實際秒數
+                    let durationSeconds = data.beats * beatDuration;
+
+                    if (!data.isRest) {
+                        let noteName = data.pitch.replace('/', '').toUpperCase();
+                        if (data.accidental === 'b') noteName = noteName.charAt(0) + 'b' + noteName.slice(1);
+                        if (data.accidental === '#') noteName = noteName.charAt(0) + '#' + noteName.slice(1);
+                        
+                        // 安排發聲 (音高, 持續時間, 絕對時間點)
+                        synth.triggerAttackRelease(noteName, durationSeconds - 0.05, trackTime);
+                    }
+                    trackTime += durationSeconds; // 推進時間軸
+                });
+                return trackTime; // 回傳該軌的總時間
+            };
+
+            let endT = scheduleTrack(scoreData[0], synthTreble);
+            let endB = scheduleTrack(scoreData[1], synthBass);
+            
+            // 計算何時關閉提示 UI
+            let maxEndTime = Math.max(endT, endB);
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, (maxEndTime - now) * 1000);
         }
 
         renderScore();
