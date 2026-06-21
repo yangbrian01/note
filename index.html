@@ -3,341 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yang Tech Studio V6.0 - 專業雕刻版</title>
+    <title>Yang Tech Studio V7.0 - 總譜指揮版</title>
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        body {
-            margin: 0; display: flex; flex-direction: column; height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background-color: #f0f0f0; color: #333; user-select: none;
-        }
-        #top-bar {
-            background-color: #ffffff; border-bottom: 1px solid #d1d1d1;
-            padding: 8px 20px; display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10;
-        }
-        .brand { font-weight: bold; color: #2c5282; font-size: 18px; margin-right: 20px; }
-        .tool-btn {
-            background: transparent; border: 1px solid transparent; border-radius: 4px;
-            padding: 6px 10px; cursor: pointer; font-size: 16px; transition: 0.1s;
-        }
-        .tool-btn:hover { background-color: #e2e8f0; }
-        .tool-btn.active { background-color: #ebf4ff; color: #2b6cb0; border-color: #bee3f8; font-weight: bold; }
-        .divider { width: 1px; height: 24px; background-color: #cbd5e0; margin: 0 5px; }
-        .action-btn { background-color: #48bb78; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        
-        #main-container { display: flex; flex: 1; overflow: hidden; }
-        #palettes {
-            width: 280px; background-color: #f8fafc; border-right: 1px solid #e2e8f0;
-            overflow-y: auto; display: flex; flex-direction: column;
-        }
-        .palette-group { border-bottom: 1px solid #e2e8f0; }
-        .palette-header {
-            padding: 10px 15px; font-size: 13px; font-weight: bold; color: #4a5568;
-            background-color: #edf2f7; border-bottom: 1px solid #e2e8f0;
-        }
-        .palette-content { padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .palette-item {
-            border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px 0; text-align: center;
-            cursor: pointer; font-size: 16px; font-weight: bold; font-family: serif; font-style: italic;
-        }
-        .palette-item.active { background-color: #ebf4ff; border-color: #90cdf4; color: #2b6cb0; }
-        
-        #workspace {
-            flex: 1; overflow: auto; background-color: #525659; /* 專業暗色背景托底 */
-            display: flex; justify-content: center; align-items: flex-start; padding: 40px;
-        }
-        #paper {
-            background-color: white; width: 850px; min-height: 1100px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 60px; box-sizing: border-box;
-            cursor: crosshair;
-        }
-        .score-title { text-align: center; font-size: 32px; font-family: "Times New Roman", serif; margin-bottom: 5px; }
-        .score-composer { text-align: right; font-size: 16px; font-family: "Times New Roman", serif; margin-bottom: 30px; }
-        #score-canvas { width: 100%; }
-        #toast {
-            position: fixed; bottom: 20px; right: 20px; background: #333; color: white;
-            padding: 10px 20px; border-radius: 4px; display: none;
-        }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background-color: #e2e8f0; user-select: none; }
+        #top-bar { background-color: #2d3748; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; }
+        .brand { font-weight: bold; color: #63b3ed; font-size: 18px; margin-right: 20px; }
+        .tool-btn { background: #4a5568; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; transition: 0.1s; }
+        .tool-btn:hover { background-color: #718096; }
+        .tool-btn.active { background-color: #3182ce; font-weight: bold; box-shadow: 0 0 5px #63b3ed; }
+        .track-btn { background: #2f855a; color: white; border: 2px solid transparent; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: bold; }
+        .track-btn.active { border-color: #9ae6b4; background: #38a169; }
+        .divider { width: 1px; height: 24px; background-color: #4a5568; margin: 0 5px; }
+        #workspace { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 40px; }
+        #paper { background-color: white; width: 900px; min-height: 1100px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 50px; cursor: crosshair; }
+        .score-title { text-align: center; font-size: 32px; font-family: serif; margin-bottom: 5px; }
+        .score-composer { text-align: right; font-size: 16px; font-family: serif; margin-bottom: 30px; }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <div class="brand">Yang Tech Studio</div>
+        <div class="brand">Yang Tech V7</div>
         
-        <button class="tool-btn" data-type="duration" data-val="16">♪ 16分</button>
+        <button class="track-btn active" data-track="0">編輯: 小號 (高音)</button>
+        <button class="track-btn" data-track="1">編輯: 上低音號 (低音)</button>
+        
+        <div class="divider"></div>
+
         <button class="tool-btn" data-type="duration" data-val="8">♪ 8分</button>
         <button class="tool-btn active" data-type="duration" data-val="q">♩ 4分</button>
         <button class="tool-btn" data-type="duration" data-val="h">𝅗𝅥 2分</button>
-        
+        <button class="tool-btn" id="btn-rest">𝄽 休止</button>
+
         <div class="divider"></div>
-        <button class="tool-btn" id="btn-rest">𝄽 休止符</button>
-        <button class="tool-btn" id="btn-dot">. 附點</button>
-        <div class="divider"></div>
+
         <button class="tool-btn active" data-type="accidental" data-val="">無</button>
         <button class="tool-btn" data-type="accidental" data-val="b">♭</button>
         <button class="tool-btn" data-type="accidental" data-val="#">♯</button>
 
         <div style="flex:1;"></div>
-        <span style="font-size: 12px; color: #666; margin-right: 15px;">按住 Shift 點擊可輸入和弦</span>
-        <button class="action-btn" style="background:#e2e8f0; color:#333; margin-right:10px;" onclick="undoNote()">↶ 復原</button>
-        <button class="action-btn" onclick="playScore()">▶ 播放</button>
+        <button class="tool-btn" style="background:#e53e3e;" onclick="undoNote()">↶ 復原</button>
     </div>
 
-    <div id="main-container">
-        <div id="palettes">
-            <div class="palette-group">
-                <div class="palette-header">演奏記號 (Articulations)</div>
-                <div class="palette-content" id="articulation-palette">
-                    <div class="palette-item" data-val="a>">></div>
-                    <div class="palette-item" data-val="a^">^</div>
-                    <div class="palette-item" data-val="a.">.</div>
-                    <div class="palette-item" data-val="a-">-</div>
-                </div>
-            </div>
-            <div class="palette-group">
-                <div class="palette-header">力度記號 (Dynamics)</div>
-                <div class="palette-content" id="dynamic-palette">
-                    <div class="palette-item" data-val="p">p</div>
-                    <div class="palette-item" data-val="mp">mp</div>
-                    <div class="palette-item" data-val="mf">mf</div>
-                    <div class="palette-item" data-val="f">f</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="workspace">
-            <div id="paper">
-                <div class="score-title">Concert Piece</div>
-                <div class="score-composer">Euphonium / Arr. Yang Ting-li</div>
-                <div id="score-canvas"></div>
-            </div>
+    <div id="workspace">
+        <div id="paper">
+            <div class="score-title">Chorale for Brass</div>
+            <div class="score-composer">Conductor's Score</div>
+            <div id="score-canvas"></div>
         </div>
     </div>
-
-    <div id="toast">已切換和弦輸入模式</div>
 
     <script>
-        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Dot, Articulation, Modifier, TextDynamics, Beam } = Vex.Flow;
+        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, StaveConnector, Beam } = Vex.Flow;
 
+        // 系統狀態
         let currentDuration = "q";
         let currentAccidental = "";
         let isRest = false;
-        let isDotted = false;
-        let currentArticulation = null;
-        let currentDynamic = null;
+        let activeTrack = 0; // 0: Trumpet, 1: Euphonium
         
         const beatValues = { "w": 4, "h": 2, "q": 1, "8": 0.5, "16": 0.25 };
-        let scoreData = []; // 儲存拍子 (Beat) 的陣列
-
-        // --- UI 事件綁定 ---
-        function setupButtons(selector, callback) {
-            document.querySelectorAll(selector).forEach(btn => {
-                btn.onclick = (e) => {
-                    document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    callback(e.target.dataset.val);
-                };
-            });
-        }
-        setupButtons('[data-type="duration"]', val => currentDuration = val);
-        setupButtons('[data-type="accidental"]', val => currentAccidental = val);
         
-        document.getElementById('btn-rest').onclick = (e) => { isRest = !isRest; e.target.classList.toggle('active'); };
-        document.getElementById('btn-dot').onclick = (e) => { isDotted = !isDotted; e.target.classList.toggle('active'); };
+        // 雙軌資料庫
+        let scoreData = [
+            [], // Track 0
+            []  // Track 1
+        ];
 
-        // 面板記號點擊取消/啟用邏輯
-        document.querySelectorAll('.palette-item').forEach(btn => {
+        // UI 綁定
+        document.querySelectorAll('.track-btn').forEach(btn => {
             btn.onclick = (e) => {
-                const isActive = e.target.classList.contains('active');
-                e.target.parentElement.querySelectorAll('.palette-item').forEach(b => b.classList.remove('active'));
-                
-                let val = e.target.dataset.val;
-                if (isActive) {
-                    if(val.startsWith('a')) currentArticulation = null;
-                    else currentDynamic = null;
-                } else {
-                    e.target.classList.add('active');
-                    if(val.startsWith('a')) currentArticulation = val;
-                    else currentDynamic = val;
-                }
+                document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                activeTrack = parseInt(e.target.dataset.track);
             };
         });
 
-        // Bass Clef Y軸音高轉換
-        const pitchMap = [
-            { y: -20, pitch: "d/4" }, { y: -10, pitch: "b/3" }, { y: 0, pitch: "g/3" }, { y: 10, pitch: "e/3" },
-            { y: 20, pitch: "c/3" },  { y: 30, pitch: "a/2" },  { y: 40, pitch: "f/2" }, { y: 50, pitch: "d/2" }
+        document.querySelectorAll('[data-type="duration"]').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('[data-type="duration"]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentDuration = e.target.dataset.val;
+            };
+        });
+
+        document.querySelectorAll('[data-type="accidental"]').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('[data-type="accidental"]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentAccidental = e.target.dataset.val;
+            };
+        });
+
+        document.getElementById('btn-rest').onclick = (e) => { isRest = !isRest; e.target.classList.toggle('active'); };
+
+        // 兩個聲部的音高對應表
+        const pitchMapTreble = [
+            { y: 0, pitch: "g/5" }, { y: 10, pitch: "e/5" }, { y: 20, pitch: "c/5" }, { y: 30, pitch: "a/4" }, { y: 40, pitch: "f/4" }, { y: 50, pitch: "d/4" }
+        ];
+        const pitchMapBass = [
+            { y: 0, pitch: "b/3" }, { y: 10, pitch: "g/3" }, { y: 20, pitch: "e/3" }, { y: 30, pitch: "c/3" }, { y: 40, pitch: "a/2" }, { y: 50, pitch: "f/2" }
         ];
 
-        // --- 核心輸入邏輯 (支援和弦 Shift) ---
+        // 點擊輸入
         document.getElementById('paper').addEventListener('mousedown', function(e) {
-            if(e.target.closest('#palettes') || e.target.closest('#top-bar')) return;
-
             const rect = document.getElementById('score-canvas').getBoundingClientRect();
-            // 動態校正 Y 軸，讓游標精準對應五線譜
-            let lineOffset = (Math.floor((e.clientY - rect.top) / 130)) * 130;
-            const clickY = e.clientY - rect.top - lineOffset - 40; 
+            
+            // 每個系統的高度大約是 250px (包含兩個五線譜)
+            let systemOffset = (Math.floor((e.clientY - rect.top) / 250)) * 250;
+            
+            // 根據選定音軌給予不同的 Y 軸基準點
+            let trackOffsetY = activeTrack === 0 ? 40 : 160;
+            const clickY = e.clientY - rect.top - systemOffset - trackOffsetY; 
 
-            let closestPitch = "b/2";
+            let map = activeTrack === 0 ? pitchMapTreble : pitchMapBass;
+            let closestPitch = map[Math.floor(map.length / 2)].pitch;
             let minDiff = Infinity;
-            for (let p of pitchMap) {
+            for (let p of map) {
                 let diff = Math.abs(clickY - p.y);
                 if (diff < minDiff) { minDiff = diff; closestPitch = p.pitch; }
             }
 
-            let beats = beatValues[currentDuration];
-            if (isDotted) beats *= 1.5;
-
-            // 和弦邏輯：如果按住 Shift 且有上一個音符，則疊加在同一個拍子上
-            if (e.shiftKey && scoreData.length > 0 && !isRest) {
-                let lastBeat = scoreData[scoreData.length - 1];
-                if (!lastBeat.isRest && lastBeat.duration === currentDuration) {
-                    if (!lastBeat.keys.includes(closestPitch)) {
-                        lastBeat.keys.push(closestPitch);
-                        if(currentAccidental) lastBeat.accidentals[closestPitch] = currentAccidental;
-                    }
-                    renderScore();
-                    return;
-                }
-            }
-
-            let newBeat = {
-                keys: isRest ? ["d/3"] : [closestPitch],
-                duration: currentDuration,
-                isRest: isRest,
-                isDotted: isDotted,
-                beats: beats,
-                accidentals: {},
-                articulation: currentArticulation,
-                dynamic: currentDynamic
-            };
-            if(currentAccidental && !isRest) newBeat.accidentals[closestPitch] = currentAccidental;
-            
-            scoreData.push(newBeat);
-            
-            // 用完面板記號自動重置
-            currentArticulation = null; currentDynamic = null;
-            document.querySelectorAll('.palette-item').forEach(b => b.classList.remove('active'));
-            
+            scoreData[activeTrack].push({
+                pitch: closestPitch, duration: currentDuration, accidental: currentAccidental,
+                isRest: isRest, beats: beatValues[currentDuration]
+            });
             renderScore();
         });
 
-        function undoNote() { scoreData.pop(); renderScore(); }
+        function undoNote() { scoreData[activeTrack].pop(); renderScore(); }
 
-        // --- 渲染引擎 (包含自動符尾) ---
+        // --- 核心：總譜渲染引擎 ---
         function renderScore() {
             const container = document.getElementById("score-canvas");
             container.innerHTML = ""; 
             
-            const MAX_WIDTH = 730; 
+            const MAX_WIDTH = 800; 
             const renderer = new Renderer(container, Renderer.Backends.SVG);
             const context = renderer.getContext();
 
-            if (scoreData.length === 0) {
-                renderer.resize(MAX_WIDTH, 150);
-                new Stave(0, 0, 250).addClef("bass").addTimeSignature("4/4").setContext(context).draw();
+            // 如果兩軌都沒資料，畫空總譜
+            if (scoreData[0].length === 0 && scoreData[1].length === 0) {
+                renderer.resize(MAX_WIDTH, 250);
+                const st1 = new Stave(0, 0, 300).addClef("treble").addTimeSignature("4/4").setContext(context).draw();
+                const st2 = new Stave(0, 120, 300).addClef("bass").addTimeSignature("4/4").setContext(context).draw();
+                new StaveConnector(st1, st2).setType(StaveConnector.type.BRACKET).setContext(context).draw();
+                new StaveConnector(st1, st2).setType(StaveConnector.type.SINGLE_LEFT).setContext(context).draw();
                 return;
             }
 
-            let measures = [];
-            let currentMeasure = [];
-            let currentBeats = 0;
-
-            scoreData.forEach(data => {
-                if (currentBeats + data.beats > 4) {
-                    measures.push(currentMeasure);
-                    currentMeasure = [];
-                    currentBeats = 0;
-                }
-                currentMeasure.push(data);
-                currentBeats += data.beats;
-            });
-            if (currentMeasure.length > 0) measures.push(currentMeasure);
-
-            renderer.resize(MAX_WIDTH, Math.ceil(measures.length / 3) * 130 + 50);
-
-            let startX = 0;
-            let startY = 0;
-
-            measures.forEach((measureNotes, index) => {
-                let staveWidth = (startX === 0) ? 260 : 220; 
-                if (startX + staveWidth > MAX_WIDTH) {
-                    startX = 0; startY += 130; staveWidth = 260;
-                }
-
-                const stave = new Stave(startX, startY, staveWidth);
-                if (startX === 0) stave.addClef("bass").addTimeSignature("4/4");
-                stave.setContext(context).draw();
-
-                let vexNotes = measureNotes.map(data => {
-                    let duration = data.duration + (data.isRest ? "r" : "");
-                    // 對音高進行排序，VexFlow 和弦要求從低到高排列
-                    let sortedKeys = [...data.keys].sort(); 
-                    
-                    let note = new StaveNote({ keys: sortedKeys, duration: duration, clef: "bass" });
-                    
-                    if (data.isDotted) note.addModifier(new Dot());
-                    
-                    // 掛載升降記號
-                    sortedKeys.forEach((key, i) => {
-                        if(data.accidentals[key]) note.addModifier(new Accidental(data.accidentals[key]), i);
-                    });
-
-                    // 掛載演奏記號 (Articulations)
-                    if (data.articulation && !data.isRest) {
-                        note.addModifier(new Articulation(data.articulation).setPosition(Modifier.Position.ABOVE));
-                    }
-                    
-                    // 掛載力度記號 (Dynamics)
-                    if (data.dynamic && !data.isRest) {
-                        note.addModifier(new TextDynamics({ text: data.dynamic }).setPosition(Modifier.Position.BELOW));
-                    }
-                    return note;
+            // 計算兩軌中最長的小節數
+            let processTrack = (trackData) => {
+                let measures = [], current = [], beats = 0;
+                trackData.forEach(d => {
+                    if (beats + d.beats > 4) { measures.push(current); current = []; beats = 0; }
+                    current.push(d); beats += d.beats;
                 });
+                if (current.length > 0 || measures.length === 0) measures.push(current);
+                return measures;
+            };
 
-                // 自動符尾連線 (Auto-Beaming)
-                const beams = Beam.generateBeams(vexNotes);
+            let m0 = processTrack(scoreData[0]);
+            let m1 = processTrack(scoreData[1]);
+            let totalMeasures = Math.max(m0.length, m1.length);
 
-                let voiceBeats = measureNotes.reduce((sum, n) => sum + n.beats, 0);
-                const voice = new Voice({ num_beats: Math.ceil(voiceBeats), beat_value: 4 }).setStrict(false);
-                voice.addTickables(vexNotes);
+            renderer.resize(MAX_WIDTH, Math.ceil(totalMeasures / 2) * 250 + 50);
 
-                new Formatter().joinVoices([voice]).format([voice], staveWidth - 40);
-                voice.draw(context, stave);
-                beams.forEach(b => b.setContext(context).draw()); // 畫出符尾
+            let startX = 0, startY = 0;
+
+            for (let i = 0; i < totalMeasures; i++) {
+                let staveWidth = (startX === 0) ? 350 : 300; 
+                if (startX + staveWidth > MAX_WIDTH) { startX = 0; startY += 250; staveWidth = 350; }
+
+                // 建立上下兩行五線譜
+                const staveTreble = new Stave(startX, startY, staveWidth);
+                const staveBass = new Stave(startX, startY + 120, staveWidth);
+                
+                if (startX === 0) {
+                    staveTreble.addClef("treble").addTimeSignature("4/4");
+                    staveBass.addClef("bass").addTimeSignature("4/4");
+                }
+                staveTreble.setContext(context).draw();
+                staveBass.setContext(context).draw();
+
+                // 畫大括號
+                if (startX === 0) {
+                    new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.BRACKET).setContext(context).draw();
+                }
+                new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.SINGLE_LEFT).setContext(context).draw();
+                new StaveConnector(staveTreble, staveBass).setType(StaveConnector.type.SINGLE_RIGHT).setContext(context).draw();
+
+                // 轉換音符
+                let createVexNotes = (measureData, clef) => {
+                    if(!measureData || measureData.length === 0) {
+                        return [new StaveNote({ keys: [clef === "treble" ? "b/4" : "d/3"], duration: "wr", clef: clef })];
+                    }
+                    return measureData.map(d => {
+                        let keys = d.isRest ? [clef === "treble" ? "b/4" : "d/3"] : [d.pitch];
+                        let note = new StaveNote({ keys: keys, duration: d.duration + (d.isRest ? "r" : ""), clef: clef });
+                        if (!d.isRest && d.accidental) note.addModifier(new Accidental(d.accidental));
+                        return note;
+                    });
+                };
+
+                let notesT = createVexNotes(m0[i], "treble");
+                let notesB = createVexNotes(m1[i], "bass");
+
+                let voiceT = new Voice({ num_beats: 4, beat_value: 4 }).setStrict(false).addTickables(notesT);
+                let voiceB = new Voice({ num_beats: 4, beat_value: 4 }).setStrict(false).addTickables(notesB);
+
+                // 垂直對齊兩軌節拍
+                new Formatter().joinVoices([voiceT, voiceB]).format([voiceT, voiceB], staveWidth - 60);
+                
+                voiceT.draw(context, staveTreble);
+                voiceB.draw(context, staveBass);
+                Beam.generateBeams(notesT).forEach(b => b.setContext(context).draw());
+                Beam.generateBeams(notesB).forEach(b => b.setContext(context).draw());
                 
                 startX += staveWidth;
-            });
-        }
-
-        async function playScore() {
-            if (scoreData.length === 0) return;
-            await Tone.start();
-            // 使用 PolySynth 來支援和弦播放
-            const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-            let now = Tone.now();
-            
-            scoreData.forEach(data => {
-                let toneDur = data.duration + "n";
-                if (data.duration === "w") toneDur = "1n";
-                let durationSeconds = Tone.Time(toneDur).toSeconds();
-                if (data.isDotted) durationSeconds *= 1.5;
-
-                if (!data.isRest) {
-                    let playNotes = data.keys.map(key => {
-                        let noteName = key.replace('/', '').toUpperCase();
-                        let acc = data.accidentals[key];
-                        if (acc === 'b') noteName = noteName.charAt(0) + 'b' + noteName.slice(1);
-                        if (acc === '#') noteName = noteName.charAt(0) + '#' + noteName.slice(1);
-                        return noteName;
-                    });
-                    synth.triggerAttackRelease(playNotes, durationSeconds, now);
-                }
-                now += durationSeconds;
-            });
+            }
         }
 
         renderScore();
