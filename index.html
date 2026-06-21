@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬打譜軟體 - 測試版</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
-    
+    <title>專屬打譜軟體 - 專業渲染版</title>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <style>
         body {
             background-color: #f0f2f5;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             font-family: sans-serif;
+            padding-top: 50px;
+            margin: 0;
         }
-        h1 {
-            position: absolute;
-            top: 20px;
-            color: #333;
-        }
-        #scoreCanvas {
+        #score-container {
             background-color: white;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            /* 讓 SVG 樂譜可以漂亮地顯示 */
+            overflow: auto; 
         }
     </style>
 </head>
@@ -32,63 +29,43 @@
 
     <h1>專屬打譜軟體</h1>
     
-    <canvas id="scoreCanvas" width="800" height="300"></canvas>
+    <div id="score-container"></div>
 
     <script>
-        const canvas = document.getElementById('scoreCanvas');
-        const ctx = canvas.getContext('2d');
+        // 提取 VexFlow 的核心模組
+        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+
+        // 1. 初始化畫布 (使用 SVG 格式，放大縮小都不會失真)
+        const div = document.getElementById("score-container");
+        const renderer = new Renderer(div, Renderer.Backends.SVG);
+        renderer.resize(700, 200);
+        const context = renderer.getContext();
+
+        // 2. 建立五線譜 (設定 X, Y 座標與寬度)
+        const stave = new Stave(10, 40, 600);
         
-        // 將五線譜的間距與起始位置設為全域變數，方便所有函數共用
-        const staffSpacing = 12;
-        const startY = (canvas.height / 2) - (staffSpacing * 2);
+        // 加上你熟悉的低音譜記號與 4/4 拍號
+        stave.addClef("bass").addTimeSignature("4/4");
+        stave.setContext(context).draw();
 
-        // 1. 畫五線譜
-        function drawStaff() {
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1.2;
+        // 3. 建立音符陣列
+        // 這裡幫你配了四個四分音符 (q)，剛好填滿 4/4 拍
+        const notes = [
+            new StaveNote({ keys: ["g/2"], duration: "q", clef: "bass" }), // G2
+            // 你的降 B 音 (Bb2) 在這裡！
+            new StaveNote({ keys: ["b/2"], duration: "q", clef: "bass" })  
+                .addModifier(new Accidental("b")), 
+            new StaveNote({ keys: ["c/3"], duration: "q", clef: "bass" }), // C3
+            new StaveNote({ keys: ["d/3"], duration: "q", clef: "bass" }), // D3
+        ];
 
-            for (let i = 0; i < 5; i++) {
-                const y = startY + (i * staffSpacing);
-                ctx.beginPath();
-                ctx.moveTo(40, y);
-                ctx.lineTo(canvas.width - 40, y);
-                ctx.stroke();
-            }
-        }
+        // 4. 建立聲部 (Voice) 並確保節拍正確
+        const voice = new Voice({ num_beats: 4, beat_value: 4 });
+        voice.addTickables(notes);
 
-        // 2. 畫低音譜記號 (Bass Clef)
-        function drawBassClef() {
-            ctx.fillStyle = 'black';
-            ctx.font = '48px "Noto Music", sans-serif';
-            
-            // 𝄢 是低音譜記號的 Unicode 符號
-            // Y 軸座標需要經過微調，讓譜號的兩個點剛好夾住第四線 (F線)
-            ctx.fillText('𝄢', 45, startY + (staffSpacing * 3.6));
-        }
-
-        // 3. 畫音符與降記號
-        function drawNote() {
-            ctx.fillStyle = 'black';
-            ctx.font = '40px "Noto Music", sans-serif';
-            
-            // 找出五線譜第二線 (B線) 的 Y 座標
-            const noteY = startY + (staffSpacing * 1.5);
-            
-            // 畫降記號 (♭)
-            ctx.fillText('♭', 120, noteY + 5); 
-            // 畫四分音符 (♩)
-            ctx.fillText('♩', 140, noteY); 
-        }
-
-        // 重要：必須等音樂字體從 Google 伺服器載入完成後，再開始畫圖
-        // 否則瀏覽器會來不及渲染，導致音符變成奇怪的方塊亂碼
-        document.fonts.ready.then(() => {
-            // 每次畫圖前先清空畫布
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            drawStaff();
-            drawBassClef();
-            drawNote();
-        });
+        // 5. 自動排版與渲染 (Formatter 會自動計算最完美的音符間距)
+        new Formatter().joinVoices([voice]).format([voice], 500);
+        voice.draw(context, stave);
     </script>
 
 </body>
