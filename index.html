@@ -3,229 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬打譜軟體 V2.0 - 互動發聲版</title>
+    <title>Yang Tech 編譜引擎 V3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         body {
             margin: 0; display: flex; height: 100vh;
             font-family: 'Segoe UI', sans-serif;
-            background-color: #1e1e1e; color: #ffffff;
-            user-select: none;
+            background-color: #1e1e1e; color: #ffffff; user-select: none;
         }
         #sidebar {
-            width: 280px; background-color: #252526;
-            border-right: 1px solid #3e3e42; padding: 20px;
-            overflow-y: auto;
+            width: 320px; background-color: #252526;
+            border-right: 1px solid #3e3e42; padding: 20px; overflow-y: auto;
         }
         #sidebar h2 { color: #4daafc; font-size: 20px; margin-top: 0; }
-        .track-info {
-            background: #333; padding: 10px; border-radius: 6px;
-            margin-bottom: 20px; border-left: 4px solid #4daafc;
-        }
-        .tool-group { margin-bottom: 20px; }
-        .tool-group p { margin: 0 0 10px 0; color: #aaa; font-size: 14px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .tool-group { margin-bottom: 20px; background: #333; padding: 15px; border-radius: 8px; }
+        .tool-group p { margin: 0 0 10px 0; color: #ccc; font-size: 14px; font-weight: bold; }
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 8px; }
         .tool-btn {
-            background-color: #3e3e42; color: white; border: none;
-            padding: 10px; border-radius: 4px; cursor: pointer;
-            transition: 0.2s; font-size: 14px;
+            background-color: #444; color: white; border: 1px solid #555;
+            padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.1s; font-size: 14px;
         }
         .tool-btn:hover { background-color: #555; }
-        .tool-btn.active { background-color: #4daafc; font-weight: bold; }
-        .action-btn {
-            background-color: #d1a827; color: #1e1e1e; border: none;
-            padding: 12px; width: 100%; border-radius: 4px; font-weight: bold;
-            cursor: pointer; margin-top: 10px;
-        }
-        .action-btn:hover { background-color: #e3b836; }
+        .tool-btn.active { background-color: #4daafc; border-color: #4daafc; font-weight: bold; }
+        .tool-btn.toggle-active { background-color: #d1a827; color: #000; border-color: #d1a827; font-weight: bold; }
         
-        #main-area { flex: 1; display: flex; flex-direction: column; }
+        .action-btn {
+            background-color: #4caf50; color: white; border: none;
+            padding: 12px; width: 100%; border-radius: 4px; font-weight: bold;
+            cursor: pointer; margin-top: 10px; font-size: 16px;
+        }
+        .action-btn:hover { background-color: #45a049; }
+        
+        #main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #toolbar {
-            height: 60px; background-color: #333333;
-            border-bottom: 1px solid #3e3e42; display: flex;
-            align-items: center; padding: 0 20px; gap: 15px;
+            height: 60px; background-color: #333333; border-bottom: 1px solid #3e3e42;
+            display: flex; align-items: center; padding: 0 20px; gap: 15px; flex-shrink: 0;
         }
         .top-btn {
-            background-color: #4daafc; color: white; border: none;
+            background-color: #555; color: white; border: none;
             padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;
         }
-        .top-btn.play { background-color: #4caf50; }
+        .top-btn.play { background-color: #4daafc; }
         .top-btn.clear { background-color: #e53935; }
 
         #workspace {
             flex: 1; padding: 40px; overflow: auto;
-            display: flex; justify-content: center; align-items: flex-start;
+            background-color: #2d2d30;
+            display: flex; align-items: flex-start;
         }
         #score-container {
-            background-color: white; padding: 30px;
+            background-color: white; padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px;
+            min-height: 150px; white-space: nowrap;
         }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <h2>🎵 專屬打譜軟體</h2>
-        
-        <div class="track-info">
-            <strong>目前音軌：Euphonium</strong><br>
-            <span style="font-size: 12px; color: #aaa;">模式：單一行譜 (分譜編輯)</span>
-        </div>
+        <h2>🎵 Yang Tech 編譜引擎</h2>
 
         <div class="tool-group">
-            <p>1. 選擇音符長度</p>
+            <p>1. 音符時值與修飾</p>
             <div class="btn-grid" id="duration-btns">
-                <button class="tool-btn" data-val="h">二分音符</button>
-                <button class="tool-btn active" data-val="q">四分音符</button>
-                <button class="tool-btn" data-val="8">八分音符</button>
+                <button class="tool-btn" data-val="w">全音</button>
+                <button class="tool-btn" data-val="h">二分</button>
+                <button class="tool-btn active" data-val="q">四分</button>
+                <button class="tool-btn" data-val="8">八分</button>
+                <button class="tool-btn" data-val="16">十六分</button>
+            </div>
+            <div class="btn-grid" style="margin-top: 8px;">
+                <button class="tool-btn" id="btn-dot">附點 (.)</button>
+                <button class="tool-btn" id="btn-rest">休止符 (Rest)</button>
             </div>
         </div>
 
         <div class="tool-group">
-            <p>2. 選擇音高 (低音譜號)</p>
+            <p>2. 臨時記號</p>
+            <div class="btn-grid" id="accidental-btns">
+                <button class="tool-btn active" data-val="">無</button>
+                <button class="tool-btn" data-val="b">降 (b)</button>
+                <button class="tool-btn" data-val="#">升 (#)</button>
+                <button class="tool-btn" data-val="n">還原 (n)</button>
+            </div>
+        </div>
+
+        <div class="tool-group" id="pitch-group">
+            <p>3. 音高選擇 (Bass Clef)</p>
             <div class="btn-grid" id="pitch-btns">
                 <button class="tool-btn" data-val="f/2">F2</button>
                 <button class="tool-btn" data-val="g/2">G2</button>
                 <button class="tool-btn" data-val="a/2">A2</button>
-                <button class="tool-btn active" data-val="bb/2">Bb2</button>
+                <button class="tool-btn active" data-val="b/2">B2</button>
                 <button class="tool-btn" data-val="c/3">C3</button>
                 <button class="tool-btn" data-val="d/3">D3</button>
-                <button class="tool-btn" data-val="eb/3">Eb3</button>
+                <button class="tool-btn" data-val="e/3">E3</button>
                 <button class="tool-btn" data-val="f/3">F3</button>
             </div>
         </div>
 
-        <button class="action-btn" onclick="addNote()">➕ 新增音符至樂譜</button>
-        
-        <div style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px;">
-            <p style="color: #aaa; font-size: 14px; margin-bottom: 10px;">總譜控制 (開發中)</p>
-            <button class="tool-btn" style="width: 100%;">切換指揮總譜模式</button>
-        </div>
+        <button class="action-btn" onclick="addNote()">➕ 寫入樂譜</button>
     </div>
 
     <div id="main-area">
         <div id="toolbar">
-            <button class="top-btn clear" onclick="clearScore()">🗑 清空樂譜</button>
+            <button class="top-btn clear" onclick="clearScore()">🗑 清空</button>
+            <button class="top-btn" onclick="undoNote()">↶ 復原 (Undo)</button>
             <div style="flex:1;"></div>
-            <button class="top-btn play" onclick="playScore()">▶ 播放樂譜</button>
+            <button class="top-btn play" onclick="playScore()">▶ 播放 (Tone.js)</button>
         </div>
-
         <div id="workspace">
             <div id="score-container"></div>
         </div>
     </div>
 
     <script>
-        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
+        const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, Dot } = Vex.Flow;
 
-        // 系統狀態變數
+        // 系統狀態
         let currentDuration = "q";
-        let currentPitch = "bb/2";
+        let currentPitch = "b/2";
+        let currentAccidental = "";
+        let isRest = false;
+        let isDotted = false;
         
-        // 預設給兩個音符當作起手式
-        let scoreData = [
-            { pitch: "bb/2", duration: "q" },
-            { pitch: "c/3", duration: "q" }
-        ];
+        // 時值對應的拍數 (4/4拍為基準)
+        const beatValues = { "w": 4, "h": 2, "q": 1, "8": 0.5, "16": 0.25 };
+        
+        // 樂譜資料庫
+        let scoreData = [];
 
-        // UI 按鈕綁定邏輯
-        document.querySelectorAll('#duration-btns .tool-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('#duration-btns .tool-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentDuration = e.target.dataset.val;
-            };
-        });
-
-        document.querySelectorAll('#pitch-btns .tool-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('#pitch-btns .tool-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentPitch = e.target.dataset.val;
-            };
-        });
-
-        // 核心渲染函數：把 scoreData 陣列轉換成 VexFlow 樂譜
-        function renderScore() {
-            const container = document.getElementById("score-container");
-            container.innerHTML = ""; // 清空舊畫布
-
-            if (scoreData.length === 0) return;
-
-            const renderer = new Renderer(container, Renderer.Backends.SVG);
-            // 動態計算畫布寬度
-            renderer.resize(Math.max(400, scoreData.length * 80 + 100), 200);
-            const context = renderer.getContext();
-
-            const stave = new Stave(10, 40, Math.max(300, scoreData.length * 80));
-            stave.addClef("bass").addTimeSignature("4/4");
-            stave.setContext(context).draw();
-
-            // 根據資料陣列生成音符
-            const notes = scoreData.map(data => {
-                // 處理降記號邏輯 (如果音高包含 b)
-                let keys = [data.pitch.replace('b/', '/')]; // VexFlow 讀音高不要 b
-                let note = new StaveNote({ keys: keys, duration: data.duration, clef: "bass" });
-                if (data.pitch.includes('b')) {
-                    note.addModifier(new Accidental("b"));
-                }
-                return note;
+        // --- UI 事件綁定 ---
+        function setupButtons(selector, callback) {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.onclick = (e) => {
+                    document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    callback(e.target.dataset.val);
+                };
             });
-
-            // 計算總拍數以建立 Voice
-            let totalTicks = notes.reduce((sum, note) => sum + note.getTicks().value(), 0);
-            // VexFlow 預設 1拍 = 4096 ticks
-            let beats = Math.ceil(totalTicks / 4096); 
-            
-            const voice = new Voice({ num_beats: beats, beat_value: 4 });
-            voice.setStrict(false); // 允許拍數不滿一個小節
-            voice.addTickables(notes);
-
-            new Formatter().joinVoices([voice]).format([voice], Math.max(250, scoreData.length * 70));
-            voice.draw(context, stave);
         }
 
-        // 新增音符
+        setupButtons('#duration-btns .tool-btn', val => currentDuration = val);
+        setupButtons('#accidental-btns .tool-btn', val => currentAccidental = val);
+        setupButtons('#pitch-btns .tool-btn', val => currentPitch = val);
+
+        document.getElementById('btn-rest').onclick = (e) => {
+            isRest = !isRest;
+            e.target.classList.toggle('toggle-active');
+            document.getElementById('pitch-group').style.opacity = isRest ? '0.3' : '1';
+        };
+
+        document.getElementById('btn-dot').onclick = (e) => {
+            isDotted = !isDotted;
+            e.target.classList.toggle('toggle-active');
+        };
+
+        // --- 核心邏輯：新增音符 ---
         function addNote() {
-            scoreData.push({ pitch: currentPitch, duration: currentDuration });
+            let beats = beatValues[currentDuration];
+            if (isDotted) beats *= 1.5;
+
+            scoreData.push({
+                pitch: currentPitch,
+                duration: currentDuration,
+                accidental: currentAccidental,
+                isRest: isRest,
+                isDotted: isDotted,
+                beats: beats
+            });
             renderScore();
         }
 
-        // 清空樂譜
-        function clearScore() {
-            scoreData = [];
-            document.getElementById("score-container").innerHTML = "";
+        function undoNote() {
+            scoreData.pop();
+            renderScore();
         }
 
-        // Tone.js 播放邏輯
+        function clearScore() {
+            scoreData = [];
+            renderScore();
+        }
+
+        // --- VexFlow 渲染邏輯 (自動小節線分割) ---
+        function renderScore() {
+            const container = document.getElementById("score-container");
+            container.innerHTML = ""; 
+            if (scoreData.length === 0) return;
+
+            // 1. 將資料分組為「小節」(Measures)
+            let measures = [];
+            let currentMeasure = [];
+            let currentBeats = 0;
+
+            scoreData.forEach(data => {
+                if (currentBeats + data.beats > 4) {
+                    measures.push(currentMeasure);
+                    currentMeasure = [];
+                    currentBeats = 0;
+                }
+                currentMeasure.push(data);
+                currentBeats += data.beats;
+            });
+            if (currentMeasure.length > 0) measures.push(currentMeasure);
+
+            // 2. 初始化畫布 (動態寬度)
+            const totalWidth = measures.length * 250 + 100;
+            const renderer = new Renderer(container, Renderer.Backends.SVG);
+            renderer.resize(totalWidth, 200);
+            const context = renderer.getContext();
+
+            // 3. 逐一繪製小節
+            let startX = 10;
+            measures.forEach((measureNotes, index) => {
+                let staveWidth = index === 0 ? 250 : 200; // 第一小節預留譜號空間
+                const stave = new Stave(startX, 40, staveWidth);
+                
+                if (index === 0) {
+                    stave.addClef("bass").addTimeSignature("4/4");
+                }
+                stave.setContext(context).draw();
+
+                // 建立 VexFlow 音符
+                let vexNotes = measureNotes.map(data => {
+                    let keys = data.isRest ? ["d/3"] : [data.pitch];
+                    let duration = data.duration + (data.isRest ? "r" : "");
+                    
+                    let note = new StaveNote({ keys: keys, duration: duration, clef: "bass" });
+                    
+                    if (data.isDotted) note.addModifier(new Dot());
+                    if (!data.isRest && data.accidental) {
+                        note.addModifier(new Accidental(data.accidental));
+                    }
+                    return note;
+                });
+
+                // 排版並繪製此小節
+                let voiceBeats = measureNotes.reduce((sum, n) => sum + n.beats, 0);
+                // 允許不滿 4 拍的小節也能畫出來
+                const voice = new Voice({ num_beats: Math.ceil(voiceBeats), beat_value: 4 });
+                voice.setStrict(false);
+                voice.addTickables(vexNotes);
+
+                new Formatter().joinVoices([voice]).format([voice], staveWidth - 40);
+                voice.draw(context, stave);
+
+                startX += staveWidth;
+            });
+        }
+
+        // --- Tone.js 播放邏輯 ---
         async function playScore() {
-            await Tone.start(); // 啟動瀏覽器音訊引擎
+            if (scoreData.length === 0) return;
+            await Tone.start();
             const synth = new Tone.Synth().toDestination();
             
             let now = Tone.now();
             scoreData.forEach(data => {
-                // 將 VexFlow 的時值轉換為 Tone.js 能懂的時值
-                let toneDuration = data.duration === 'h' ? '2n' : (data.duration === 'q' ? '4n' : '8n');
-                // 將 VexFlow 音高 (bb/2) 轉換為標準音名 (Bb2)
-                let tonePitch = data.pitch.replace('/', '').toUpperCase();
-                // 修正降記號大小寫 (Bb2)
-                if(tonePitch.includes('B') && tonePitch.length === 3) {
-                    tonePitch = tonePitch[0] + 'b' + tonePitch[2];
-                }
+                let toneDur = data.duration + "n";
+                if (data.duration === "w") toneDur = "1n";
+                let durationSeconds = Tone.Time(toneDur).toSeconds();
+                if (data.isDotted) durationSeconds *= 1.5;
 
-                synth.triggerAttackRelease(tonePitch, toneDuration, now);
-                
-                // 計算下一個音符的起始時間
-                let addTime = data.duration === 'h' ? 1 : (data.duration === 'q' ? 0.5 : 0.25);
-                now += addTime;
+                if (!data.isRest) {
+                    // 將 b/2, acc: 'b' 轉成 Bb2
+                    let noteName = data.pitch.replace('/', '').toUpperCase();
+                    if (data.accidental === 'b') noteName = noteName.charAt(0) + 'b' + noteName.slice(1);
+                    if (data.accidental === '#') noteName = noteName.charAt(0) + '#' + noteName.slice(1);
+                    
+                    synth.triggerAttackRelease(noteName, durationSeconds, now);
+                }
+                now += durationSeconds;
             });
         }
 
-        // 初始渲染
         renderScore();
     </script>
-
 </body>
 </html>
-
