@@ -3,69 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬打譜軟體 - 專業渲染版</title>
+    <title>專屬打譜軟體 V1.0</title>
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <style>
+        /* 軟體整體佈局 */
         body {
-            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e; /* 深色模式背景 */
+            color: #ffffff;
+        }
+
+        /* 左側工具欄 */
+        #sidebar {
+            width: 250px;
+            background-color: #252526;
+            border-right: 1px solid #3e3e42;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #sidebar h2 { font-size: 18px; margin-top: 0; color: #4daafc; }
+        
+        .tool-group { margin-bottom: 20px; }
+        .tool-btn {
+            background-color: #3e3e42;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .tool-btn:hover { background-color: #4daafc; }
+
+        /* 右側主工作區 */
+        #main-area {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            font-family: sans-serif;
-            padding-top: 50px;
-            margin: 0;
         }
+
+        /* 上方控制列 */
+        #toolbar {
+            height: 60px;
+            background-color: #333333;
+            border-bottom: 1px solid #3e3e42;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background-color: #4daafc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .action-btn.play { background-color: #4caf50; }
+
+        /* 樂譜畫布區 */
+        #workspace {
+            flex: 1;
+            padding: 40px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
         #score-container {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            /* 讓 SVG 樂譜可以漂亮地顯示 */
-            overflow: auto; 
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-    <h1>專屬打譜軟體</h1>
-    
-    <div id="score-container"></div>
+    <div id="sidebar">
+        <h2>🎵 專屬打譜軟體</h2>
+        
+        <div class="tool-group">
+            <p>音符時值</p>
+            <button class="tool-btn">𝅘𝅥 二分音符</button>
+            <button class="tool-btn">♩ 四分音符</button>
+            <button class="tool-btn">♪ 八分音符</button>
+        </div>
+
+        <div class="tool-group">
+            <p>記號與譜號</p>
+            <button class="tool-btn">𝄞 高音譜號</button>
+            <button class="tool-btn">𝄢 低音譜號</button>
+            <button class="tool-btn">♭ 降記號</button>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="toolbar">
+            <button class="action-btn">新增小節</button>
+            <button class="action-btn">匯出 PDF</button>
+            <div style="flex:1;"></div>
+            <button class="action-btn play">▶ 播放</button>
+        </div>
+
+        <div id="workspace">
+            <div id="score-container"></div>
+        </div>
+    </div>
 
     <script>
-        // 提取 VexFlow 的核心模組
         const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Vex.Flow;
 
-        // 1. 初始化畫布 (使用 SVG 格式，放大縮小都不會失真)
+        // 初始化畫布
         const div = document.getElementById("score-container");
         const renderer = new Renderer(div, Renderer.Backends.SVG);
-        renderer.resize(700, 200);
+        renderer.resize(800, 250);
         const context = renderer.getContext();
 
-        // 2. 建立五線譜 (設定 X, Y 座標與寬度)
-        const stave = new Stave(10, 40, 600);
-        
-        // 加上你熟悉的低音譜記號與 4/4 拍號
-        stave.addClef("bass").addTimeSignature("4/4");
-        stave.setContext(context).draw();
+        // 建立第一小節 (低音譜號)
+        const stave1 = new Stave(10, 40, 350);
+        stave1.addClef("bass").addTimeSignature("4/4");
+        stave1.setContext(context).draw();
 
-        // 3. 建立音符陣列
-        // 這裡幫你配了四個四分音符 (q)，剛好填滿 4/4 拍
-        const notes = [
-            new StaveNote({ keys: ["g/2"], duration: "q", clef: "bass" }), // G2
-            // 你的降 B 音 (Bb2) 在這裡！
-            new StaveNote({ keys: ["b/2"], duration: "q", clef: "bass" })  
-                .addModifier(new Accidental("b")), 
-            new StaveNote({ keys: ["c/3"], duration: "q", clef: "bass" }), // C3
-            new StaveNote({ keys: ["d/3"], duration: "q", clef: "bass" }), // D3
+        const notes1 = [
+            new StaveNote({ keys: ["g/2"], duration: "q", clef: "bass" }),
+            new StaveNote({ keys: ["b/2"], duration: "q", clef: "bass" }).addModifier(new Accidental("b")), 
+            new StaveNote({ keys: ["c/3"], duration: "q", clef: "bass" }),
+            new StaveNote({ keys: ["d/3"], duration: "q", clef: "bass" }),
         ];
 
-        // 4. 建立聲部 (Voice) 並確保節拍正確
-        const voice = new Voice({ num_beats: 4, beat_value: 4 });
-        voice.addTickables(notes);
+        // 建立第二小節
+        const stave2 = new Stave(stave1.width + stave1.x, 40, 400);
+        stave2.setContext(context).draw();
 
-        // 5. 自動排版與渲染 (Formatter 會自動計算最完美的音符間距)
-        new Formatter().joinVoices([voice]).format([voice], 500);
-        voice.draw(context, stave);
+        const notes2 = [
+            new StaveNote({ keys: ["e/3"], duration: "8", clef: "bass" }),
+            new StaveNote({ keys: ["f/3"], duration: "8", clef: "bass" }),
+            new StaveNote({ keys: ["g/3"], duration: "q", clef: "bass" }),
+            new StaveNote({ keys: ["c/3"], duration: "h", clef: "bass" }),
+        ];
+
+        // 排版與渲染
+        const voice1 = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(notes1);
+        const voice2 = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(notes2);
+        
+        new Formatter().joinVoices([voice1, voice2]).format([voice1, voice2], 700);
+        
+        voice1.draw(context, stave1);
+        voice2.draw(context, stave2);
     </script>
 
 </body>
