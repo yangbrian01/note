@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專屬打譜軟體 - 測試版</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+        h1 {
+            position: absolute;
+            top: 20px;
+            color: #333;
+        }
+        /* 畫布的樣式：給它一個白底跟陰影，看起來像一張紙 */
+        #scoreCanvas {
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>專屬打譜軟體</h1>
+    
+    <canvas id="scoreCanvas" width="800" height="300"></canvas>
+
+    <script>
+        // 抓取畫布與繪圖環境
+        const canvas = document.getElementById('scoreCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 五線譜繪製函數
+        function drawStaff() {
+            // 設定畫筆顏色與粗細
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1.2;
+
+            // 定義每條線的間距
+            const staffSpacing = 12;
+            
+            // 找出畫布垂直中心點，往上推移讓五線譜置中
+            const startY = (canvas.height / 2) - (staffSpacing * 2);
+
+            // 跑迴圈畫出五條線
+            for (let i = 0; i < 5; i++) {
+                const y = startY + (i * staffSpacing);
+                ctx.beginPath();
+                // 從左邊留白 40，畫到右邊留白 40
+                ctx.moveTo(40, y);
+                ctx.lineTo(canvas.width - 40, y);
+                ctx.stroke();
+            }
+        }
+
+        // 執行繪製
+        drawStaff();
+    </script>
+
+</body>
+</html>
+
